@@ -117,23 +117,16 @@ def interpolate_bilinear(image, map_x, map_y):
     return interpolate_image
 
 
+SUPPORTED_INTERPOLATIONS = ('nearest', 'bilinear')
+SUPPORTED_BORDER_MODE = ('mirror', 'constant')
+
+
 def remap(
         image, map_x, map_y,
         interpolation='bilinear',
         border_mode='constant'):
-    if interpolation not in ('nearest', 'bilinear'):
-        message = \
-            "Specified interpolation '{0}' is not supported. " \
-            "Supported interpolations are 'nearest' and 'bilinear'." \
-            .format(interpolation)
-        raise ValueError(message)
-
-    if border_mode not in ('mirror', 'constant'):
-        message = \
-            "Specified edge_mode '{0}' is not supported. " \
-            "Supported modes are 'mirror' and 'constant'" \
-            .format(border_mode)
-        raise ValueError(message)
+    assert interpolation in SUPPORTED_INTERPOLATIONS
+    assert border_mode in SUPPORTED_BORDER_MODE
 
     height, width = get_image_size(image, dtype=tf.int32)
     height_f, width_f = get_image_size(image, dtype=tf.float32)

@@ -25,15 +25,26 @@ def make_image_map(height, width, trans_mat):
 
 class ShiftScaleRotate(BaseAug):
     def __init__(
-            self, shift_limit, scale_limit, rotate_limit,
-            interpolation='bilinear', border_mode='constant',
-            p=1.0):
+            self,
+            shift_limit=0.0625,
+            scale_limit=0.1,
+            rotate_limit=45,
+            interpolation='bilinear',
+            border_mode='constant',
+            p=0.5):
         super(ShiftScaleRotate, self).__init__(p)
-        self.shift_limit = shift_limit
-        self.scale_limit = scale_limit
-        self.rotate_limit = rotate_limit
-        self.interpolation = interpolation
-        self.border_mode = border_mode
+        self.shift_limit = gen_utils.check_range(
+            shift_limit, 0.0, 1.0, "shift_limit")
+        self.scale_limit = gen_utils.check_range(
+            scale_limit, 0.0, 1.0, "scale_limit")
+        self.rotate_limit = gen_utils.check_range(
+            rotate_limit, 0.0, 180.0, "rotate_limit")
+        self.interpolation = gen_utils.check_enum(
+            interpolation, image_utils.SUPPORTED_INTERPOLATIONS,
+            "interpolation")
+        self.border_mode = gen_utils.check_enum(
+            border_mode, image_utils.SUPPORTED_BORDER_MODE,
+            "border_mode")
 
     def _make_params(self, image):
         image_height, image_width = \
@@ -75,9 +86,42 @@ class ShiftScaleRotate(BaseAug):
         return aug_mask
 
     def _do_aug_bboxes(self, bboxes, image):
-        image_height, _ = image_utils.get_image_size(image, dtype=tf.float32)
-        x1, y1, x2, y2 = image_utils.decompose_bboxes(bboxes)
-        y1 = image_height - y1
-        y2 = image_height - y2
-        aug_bboxes = image_utils.compose_bboxes(x1, y1, x2, y2)
+        # TODO: process the associated label if the bbox goes out
+        # of the image.
+        image_height, image_width = \
+            image_utils.get_image_size(image, dtype=tf.float32)
+        params = self.params
+        bbox_trans_mat = image_utils.make_trans_mat(
+            image_height, image_width,
+            params["tx"], params["ty"],
+            params["z"], params["theta"])
+        x_mins, y_mins, x_maxs, y_maxs = \
+            image_utils.decompose_bboxes(bboxes)
+
+        def _trans_one_bbox(i):
+            x_min, y_min, x_max, y_max = \
+                x_mins[i], y_mins[i], x_maxs[i], y_maxs[i]
+            coord_mat = tf.convert_to_tensor([
+                [x_min, x_min, x_max, x_max],
+                [y_min, y_max, y_min, y_max],
+                [1.0,   1.0,   1.0,   1.0]], dtype=tf.float32)
+            res_mat = tf.linalg.matmul(bbox_trans_mat, coord_mat)
+
+            aug_x_min = tf.math.reduce_min(res_mat[0])
+            aug_x_min = tf.clip_by_value(aug_x_min, 0.0, image_width)
+            aug_y_min = tf.math.reduce_min(res_mat[1])
+            aug_y_min = tf.clip_by_value(aug_y_min, 0.0, image_height)
+            aug_x_max = tf.math.reduce_max(res_mat[0])
+            aug_x_max = tf.clip_by_value(aug_x_max, 0.0, image_width)
+            aug_y_max = tf.math.reduce_max(res_mat[1])
+            aug_y_max = tf.clip_by_value(aug_y_max, 0.0, image_height)
+            aug_bbox = tf.convert_to_tensor(
+                [aug_x_min, aug_y_min, aug_x_max, aug_y_max],
+                dtype=tf.float32)
+            return aug_bbox
+
+        n_bboxes = tf.shape(bboxes)[0]
+        bbox_range = tf.range(n_bboxes, dtype=tf.int32)
+        aug_bboxes = tf.map_fn(
+            _trans_one_bbox, bbox_range, dtype=tf.float32)
         return aug_bboxes

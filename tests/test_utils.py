@@ -48,6 +48,25 @@ def make_test_bboxes(num_bboxes=4):
     return test_bboxes
 
 
+def to_alb_bboxes(bboxes, height, width):
+    alb_bboxes = np.empty_like(bboxes)
+    alb_bboxes[:, 0] = bboxes[:, 0] / width
+    alb_bboxes[:, 1] = bboxes[:, 1] / height
+    alb_bboxes[:, 2] = bboxes[:, 2] / width
+    alb_bboxes[:, 3] = bboxes[:, 3] / height
+    return alb_bboxes
+
+
+def to_tfda_bboxes(bboxes, height, width):
+    tfda_bboxes = np.empty_like(bboxes)
+    clipped_bboxes = np.clip(bboxes, 0.0, 1.0)
+    tfda_bboxes[:, 0] = clipped_bboxes[:, 0] * width
+    tfda_bboxes[:, 1] = clipped_bboxes[:, 1] * height
+    tfda_bboxes[:, 2] = clipped_bboxes[:, 2] * width
+    tfda_bboxes[:, 3] = clipped_bboxes[:, 3] * height
+    return tfda_bboxes
+
+
 def make_labels(bboxes):
     num_bboxes = tf.shape(bboxes)[0]
     labels = random_int([num_bboxes], minval=1, maxval=5)
@@ -74,7 +93,7 @@ def get_bbox_params():
 def calc_abs_diff(expected_np, actual_tf):
     actual_np = actual_tf.numpy()
     abs_diff = np.abs(expected_np - actual_np)
-    eps = 1e-6
+    eps = 1e-5
     abs_diff_le_eps = (abs_diff <= eps)
     return abs_diff_le_eps
 
@@ -84,7 +103,7 @@ def assert_array(expected_np, actual_tf, message):
     assert np.all(abs_diff_le_eps), message
 
 
-def almost_assert_array(
+def partial_assert_array(
         expected_np, actual_tf, accept_ratio, message):
     abs_diff_le_eps = calc_abs_diff(expected_np, actual_tf)
     true_elem_count = np.sum(abs_diff_le_eps)

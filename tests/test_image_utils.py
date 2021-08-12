@@ -61,5 +61,5 @@ def test_remap(tx, ty, z, theta, condition):
         interpolation=cv2.INTER_NEAREST,
         border_mode=cv2.BORDER_CONSTANT)
 
-    test_utils.almost_assert_array(
+    test_utils.partial_assert_array(
         expected, actual, 0.75, condition)

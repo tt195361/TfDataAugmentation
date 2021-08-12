@@ -3,6 +3,7 @@
 #
 
 import pytest
+import numpy as np
 import albumentations as A
 import cv2
 from .context import TfDataAugmentation as tfda
@@ -26,20 +27,22 @@ def test_call(shift_limit, scale_limit, rotate_limit, condition):
         border_mode='constant',
         p=1.0)
 
-    image = test_utils.make_test_image()
-    mask = test_utils.make_test_image()
+    height = 16
+    width = 20
+    shape = [height, width, 1]
+    image = test_utils.make_test_image(shape)
+    mask = test_utils.make_test_image(shape)
     bboxes = test_utils.make_test_bboxes()
-    # labels = test_utils.make_labels(bboxes)
 
     tgt_result = tgt_transform(
         image=image, mask=mask, bboxes=bboxes)
     actual_image = tgt_result['image']
     actual_mask = tgt_result['mask']
-    # TODO:
-    # actual_bboxes = tgt_result['bboxes']
+    actual_bboxes = tgt_result['bboxes']
 
     image_np = image.numpy()
     mask_np = mask.numpy()
+    bboxes_np = bboxes.numpy()
     theta = tgt_transform.get_param('theta')
     z = tgt_transform.get_param('z')
     tx = tgt_transform.get_param('tx')
@@ -53,8 +56,19 @@ def test_call(shift_limit, scale_limit, rotate_limit, condition):
         interpolation=cv2.INTER_NEAREST,
         border_mode=cv2.BORDER_CONSTANT)
 
-    test_utils.almost_assert_array(
+    bboxes_alb = test_utils.to_alb_bboxes(bboxes_np, height, width)
+    expected_alb_bbox_list = []
+    for bbox_alb in bboxes_alb:
+        expected_alb_bbox = A.bbox_shift_scale_rotate(
+            bbox_alb, theta, z, tx, ty, height, width)
+        expected_alb_bbox_list.append(expected_alb_bbox)
+    expected_alb_bboxes = np.array(expected_alb_bbox_list)
+    expected_bboxes = test_utils.to_tfda_bboxes(
+        expected_alb_bboxes, height, width)
+
+    test_utils.partial_assert_array(
         expected_image, actual_image, 0.85, condition + ": image")
-    test_utils.almost_assert_array(
+    test_utils.partial_assert_array(
         expected_mask, actual_mask, 0.85, condition + ": mask")
-    # test_utils.assert_array(expected_bboxes, actual_bboxes, "bboxes")
+    test_utils.assert_array(
+        expected_bboxes, actual_bboxes, "bboxes")

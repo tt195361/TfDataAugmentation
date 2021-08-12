@@ -15,6 +15,20 @@ def check_range(val, min_val, max_val, name):
             "valid range is {1} <= {3} <= {2}." \
             .format(val, min_val, max_val, name)
         raise ValueError(message)
+    return val
+
+
+def check_enum(val, candidates, name):
+    """
+    Checks the specified val is in the specified candidates.
+    """
+    if val not in candidates:
+        message = \
+            "{0} can not be used for {1}." \
+            "Available values are {2}." \
+            .format(val, name, candidates)
+        raise ValueError(message)
+    return val
 
 
 def random_float(shape=None, minval=0.0, maxval=1.0):

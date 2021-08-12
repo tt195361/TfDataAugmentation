@@ -9,8 +9,7 @@ from . import gen_utils
 
 class BaseAug:
     def __init__(self, p=0.5):
-        gen_utils.check_range(p, 0.0, 1.0, "p")
-        self.p = p
+        self.p = gen_utils.check_range(p, 0.0, 1.0, "p")
         self.params = {}
 
     def __call__(self, **data):
