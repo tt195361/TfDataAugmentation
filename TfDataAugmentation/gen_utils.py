@@ -31,6 +31,16 @@ def check_enum(val, candidates, name):
     return val
 
 
+def random_int(shape=None, minval=0, maxval=1):
+    """
+    Returns random integer number(s) of the specified shape and range.
+    """
+    shape = [] if shape is None else shape
+    rnd = tf.random.uniform(
+        shape=shape, minval=minval, maxval=maxval, dtype=tf.int32)
+    return rnd
+
+
 def random_float(shape=None, minval=0.0, maxval=1.0):
     """
     Returns random float number(s) of the specified shape and range.

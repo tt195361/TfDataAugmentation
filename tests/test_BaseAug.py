@@ -3,20 +3,21 @@
 #
 
 import pytest
-from .context import TfDataAugmentation as tfda
+from .context import TfDataAugmentation as Tfda
+from .test_utils import TestResult
 
 
 @pytest.mark.parametrize(
     "p, expected, message", [
-        (-0.1, True, "< min => ValueError"),
-        (0.0, False, "= min => OK, no error"),
-        (1.0, False, "= max => OK, no error"),
-        (1.1, True, "> max => ValueError"),
+        (-0.1, TestResult.Error, "< min => Error"),
+        (0.0, TestResult.OK, "== min => OK"),
+        (1.0, TestResult.OK, "== max => OK"),
+        (1.1, TestResult.Error, "> max => Error"),
     ])
 def test_init_param_p(p, expected, message):
-    actual = False
+    actual = TestResult.OK
     try:
-        tfda.BaseAug(p=p)
+        Tfda.BaseAug(p=p)
     except ValueError:
-        actual = True
+        actual = TestResult.Error
     assert expected == actual, message

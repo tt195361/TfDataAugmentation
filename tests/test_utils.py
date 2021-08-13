@@ -5,6 +5,7 @@
 import tensorflow as tf
 import numpy as np
 import albumentations as A
+from enum import Enum
 
 IMAGE_HEIGHT = 20
 IMAGE_WIDTH = 16
@@ -110,3 +111,8 @@ def partial_assert_array(
     total_elem_count = np.size(expected_np)
     true_elem_ratio = true_elem_count / total_elem_count
     assert true_elem_ratio >= accept_ratio, message
+
+
+class TestResult(Enum):
+    OK = 0
+    Error = 1

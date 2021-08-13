@@ -3,12 +3,12 @@
 #
 
 import albumentations as A
-from .context import TfDataAugmentation as tfda
+from .context import TfDataAugmentation as Tfda
 from . import test_utils
 
 
 def test_call():
-    tgt_transform = tfda.HorizontalFlip(p=1.0)
+    tgt_transform = Tfda.HorizontalFlip(p=1.0)
 
     image = test_utils.make_test_image()
     mask = test_utils.make_test_image()

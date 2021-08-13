@@ -6,7 +6,7 @@ import pytest
 import tensorflow as tf
 import cv2
 import albumentations as A
-from .context import TfDataAugmentation as tfda
+from .context import TfDataAugmentation as Tfda
 from . import test_utils
 
 HEIGHT = 4
@@ -23,7 +23,7 @@ WIDTH = 6
         (0.0, 0.0, 0.0, -45.0, "theta=-45.0"),
     ])
 def test_make_trans_mat(tx, ty, z, theta, condition):
-    actual = tfda.make_trans_mat(HEIGHT, WIDTH, tx, ty, z, theta)
+    actual = Tfda.make_trans_mat(HEIGHT, WIDTH, tx, ty, z, theta)
     actual = actual[:2, :]
 
     # https://github.com/albumentations-team/albumentations/blob/master/albumentations/augmentations/geometric/functional.py
@@ -48,10 +48,10 @@ def test_remap(tx, ty, z, theta, condition):
     image = tf.range(1.0, WIDTH * HEIGHT + 1, dtype=tf.float32)
     image = tf.reshape(image, [HEIGHT, WIDTH, 1])
 
-    trans_mat = tfda.make_trans_mat(
+    trans_mat = Tfda.make_trans_mat(
         HEIGHT, WIDTH, -tx, -ty, 1.0/z, -theta)
-    map_x, map_y = tfda.make_image_map(HEIGHT, WIDTH, trans_mat)
-    actual = tfda.remap(
+    map_x, map_y = Tfda.make_image_map(HEIGHT, WIDTH, trans_mat)
+    actual = Tfda.remap(
         image, map_x, map_y, interpolation='nearest',
         border_mode='constant')
 

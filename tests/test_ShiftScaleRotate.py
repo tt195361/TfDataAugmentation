@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 import albumentations as A
 import cv2
-from .context import TfDataAugmentation as tfda
+from .context import TfDataAugmentation as Tfda
 from . import test_utils
 
 
@@ -19,7 +19,7 @@ from . import test_utils
         (0.3, 0.3, 45.0, "all_limits > 0"),
     ])
 def test_call(shift_limit, scale_limit, rotate_limit, condition):
-    tgt_transform = tfda.ShiftScaleRotate(
+    tgt_transform = Tfda.ShiftScaleRotate(
         shift_limit=shift_limit,
         scale_limit=scale_limit,
         rotate_limit=rotate_limit,
