@@ -3,6 +3,7 @@
 #
 
 import tensorflow as tf
+from . import BaseAug as Ba
 
 
 def check_range(val, min_val, max_val, name):
@@ -30,6 +31,28 @@ def check_enum(val, candidates, name):
         raise ValueError(message)
     return val
 
+
+def check_transforms(transforms):
+    # https://a-zumi.net/python-iterable-object/
+    if not hasattr(transforms, '__iter__'):
+        # Actually 'transforms' need indexing, so not sure
+        # whether checking iterable is enough or not.
+        message = \
+            "The parameter 'transforms' needs to be an iterable. " \
+            "Passed 'transforms': {0} ({1})" \
+            .format(transforms, type(transforms))
+        raise TypeError(message)
+    for trans in transforms:
+        if not isinstance(trans, Ba.BaseAug):
+            message = \
+                "The element in 'transforms' needs to be " \
+                "an instance of 'BaseAug'. " \
+                "The element '{0} ({1})' is not an instance " \
+                "of 'BaseAug'." \
+                .format(trans, type(trans))
+            raise TypeError(message)
+
+    return transforms
 
 def random_int(shape=None, minval=0, maxval=1):
     """

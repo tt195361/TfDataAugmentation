@@ -12,7 +12,9 @@ class MockTrans(Tfda.BaseAug):
         self.logger = logger
 
     def __call__(self, **data):
-        message = "{0} called".format(self.name)
+        message = self.get_call_message()
         self.logger.add(message)
+        return data
 
-
+    def get_call_message(self):
+        return "{0} called".format(self.name)

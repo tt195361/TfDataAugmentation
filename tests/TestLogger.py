@@ -4,7 +4,7 @@
 
 class TestLogger:
     def __init__(self):
-        self.log = []
+        self.message_list = []
 
     def reset(self):
         # All instance variables should be declared in __init__().
@@ -12,7 +12,11 @@ class TestLogger:
         self.__init__()
 
     def add(self, message):
-        self.log.append(message)
+        self.message_list.append(message)
 
     def get(self):
-        return '\n'.join(self.log)
+        return TestLogger.make_log(self.message_list)
+
+    @staticmethod
+    def make_log(message_list):
+        return '\n'.join(message_list)

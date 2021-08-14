@@ -10,20 +10,17 @@ from .test_utils import TestResult
 from .TestLogger import TestLogger
 from .MockTrans import MockTrans
 
-TRANSFORM_1 = 'transform_1'
-TRANSFORM_2 = 'transform_2'
-TRANSFORM_3 = 'transform_3'
-
 logger = TestLogger()
-transform_1 = MockTrans(TRANSFORM_1, logger, p=1.0)
-transform_2 = MockTrans(TRANSFORM_2, logger, p=1.0)
-transform_3 = MockTrans(TRANSFORM_3, logger, p=1.0)
+transform_1 = MockTrans('transform_1', logger, p=1.0)
+transform_2 = MockTrans('transform_2', logger, p=1.0)
+transform_3 = MockTrans('transform_3', logger, p=1.0)
 transforms = [transform_1, transform_2, transform_3]
 
 
 @pytest.mark.parametrize(
     "arg, expected, message", [
         (transforms, TestResult.OK, "iterable => OK"),
+        (None, TestResult.Error, "None => Error"),
         (transform_1, TestResult.Error, "not iterable => Error"),
         ([logger], TestResult.Error, "element is not BaseAug => Error"),
     ])
@@ -38,12 +35,12 @@ def test_transforms_type(arg, expected, message):
 
 # https://webbibouroku.com/Blog/Article/pytest-mock
 @pytest.mark.parametrize(
-    "rnd, name, message", [
-        (0, TRANSFORM_1, "0 => transform_1"),
-        (1, TRANSFORM_2, "1 => transform_2"),
-        (2, TRANSFORM_3, "2 => transform_3"),
+    "rnd, transform, message", [
+        (0, transform_1, "0 => transform_1"),
+        (1, transform_2, "1 => transform_2"),
+        (2, transform_3, "2 => transform_3"),
     ])
-def test_call(mocker, rnd, name, message):
+def test_call(mocker, rnd, transform, message):
     logger.reset()
     mocker.patch(
         'tensorflow.random.uniform',
@@ -53,6 +50,6 @@ def test_call(mocker, rnd, name, message):
     image = test_utils.make_test_image()
     _ = tgt_transform(image=image)
 
-    expected_log = "{0} called".format(name)
+    expected_log = transform.get_call_message()
     actual_log = logger.get()
     assert expected_log == actual_log, message
