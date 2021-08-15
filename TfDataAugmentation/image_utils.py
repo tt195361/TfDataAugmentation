@@ -25,7 +25,8 @@ def compose_bboxes(x1, y1, x2, y2):
 
 def get_image_size(image, dtype):
     image_shape = tf.cast(tf.shape(image), dtype=dtype)
-    image_height, image_width = image_shape[:2]
+    image_height = image_shape[0]
+    image_width = image_shape[1]
     return image_height, image_width
 
 
