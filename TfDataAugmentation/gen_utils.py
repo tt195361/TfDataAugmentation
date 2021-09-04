@@ -25,7 +25,7 @@ def check_enum(val, candidates, name):
     """
     if val not in candidates:
         message = \
-            "{0} can not be used for {1}." \
+            "{0} can not be used for {1}. " \
             "Available values are {2}." \
             .format(val, name, candidates)
         raise ValueError(message)
@@ -53,6 +53,7 @@ def check_transforms(transforms):
             raise TypeError(message)
 
     return transforms
+
 
 def random_int(shape=None, minval=0, maxval=1):
     """

@@ -8,7 +8,8 @@ from . import test_utils
 
 
 def test_call():
-    tgt_transform = Tfda.HorizontalFlip(p=1.0)
+    tgt_transform = test_utils.make_tgt_transform(
+        Tfda.HorizontalFlip(p=1.0))
 
     image = test_utils.make_test_image()
     mask = test_utils.make_test_image()

@@ -19,13 +19,15 @@ from . import test_utils
         (0.3, 0.3, 45.0, "all_limits > 0"),
     ])
 def test_call(shift_limit, scale_limit, rotate_limit, condition):
-    tgt_transform = Tfda.ShiftScaleRotate(
+    tgt_ssr = Tfda.ShiftScaleRotate(
         shift_limit=shift_limit,
         scale_limit=scale_limit,
         rotate_limit=rotate_limit,
         interpolation='nearest',
         border_mode='constant',
         p=1.0)
+    tgt_transform = \
+        test_utils.make_tgt_transform(tgt_ssr)
 
     height = 16
     width = 20
@@ -43,10 +45,10 @@ def test_call(shift_limit, scale_limit, rotate_limit, condition):
     image_np = image.numpy()
     mask_np = mask.numpy()
     bboxes_np = bboxes.numpy()
-    theta = tgt_transform.get_param('theta')
-    z = tgt_transform.get_param('z')
-    tx = tgt_transform.get_param('tx')
-    ty = tgt_transform.get_param('ty')
+    theta = tgt_ssr.get_param('theta')
+    z = tgt_ssr.get_param('z')
+    tx = tgt_ssr.get_param('tx')
+    ty = tgt_ssr.get_param('ty')
     expected_image = A.shift_scale_rotate(
         image_np, theta, z, tx, ty,
         interpolation=cv2.INTER_NEAREST,
@@ -60,7 +62,7 @@ def test_call(shift_limit, scale_limit, rotate_limit, condition):
     expected_alb_bbox_list = []
     for bbox_alb in bboxes_alb:
         expected_alb_bbox = A.bbox_shift_scale_rotate(
-            bbox_alb, theta, z, tx, ty, height, width)
+            bbox_alb, theta, z, tx, ty, 1.0, 1.0)
         expected_alb_bbox_list.append(expected_alb_bbox)
     expected_alb_bboxes = np.array(expected_alb_bbox_list)
     expected_bboxes = test_utils.to_tfda_bboxes(

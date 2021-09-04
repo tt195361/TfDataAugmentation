@@ -43,16 +43,16 @@ class BaseAug:
         return aug_result
 
     def do_aug(self, image, mask, bboxes):
-        self.params = self._make_params(image)
+        self.params = self._make_params()
         self._prepare_aug(image, self.params)
         aug_image = self._do_aug_image(image)
         aug_mask = self._do_aug_mask(mask) \
             if mask is not None else None
-        aug_bboxes = self._do_aug_bboxes(bboxes, image) \
+        aug_bboxes = self._do_aug_bboxes(bboxes) \
             if bboxes is not None else None
         return aug_image, aug_mask, aug_bboxes
 
-    def _make_params(self, image):
+    def _make_params(self):
         return {}
 
     def _prepare_aug(self, image, params):
@@ -65,7 +65,7 @@ class BaseAug:
     def _do_aug_mask(self, mask):
         return mask
 
-    def _do_aug_bboxes(self, bboxes, image):
+    def _do_aug_bboxes(self, bboxes):
         return bboxes
 
     @staticmethod

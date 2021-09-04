@@ -48,7 +48,7 @@ class ShiftScaleRotate(BaseAug):
             border_mode, image_utils.SUPPORTED_BORDER_MODE,
             "border_mode")
 
-    def _make_params(self, image):
+    def _make_params(self):
         rnd_shift = gen_utils.random_float(
             [2], -self.shift_limit, self.shift_limit)
         rnd_z = gen_utils.random_float(
@@ -87,14 +87,12 @@ class ShiftScaleRotate(BaseAug):
             border_mode=self.border_mode)
         return aug_mask
 
-    def _do_aug_bboxes(self, bboxes, image):
+    def _do_aug_bboxes(self, bboxes):
         # TODO: process the associated label if the bbox goes out
         # of the image.
-        image_height, image_width = \
-            image_utils.get_image_size(image, dtype=tf.float32)
         params = self.params
         bbox_trans_mat = image_utils.make_trans_mat(
-            image_height, image_width,
+            1.0, 1.0,
             params["tx"], params["ty"],
             params["z"], params["theta"])
         x_mins, y_mins, x_maxs, y_maxs = \
@@ -110,13 +108,13 @@ class ShiftScaleRotate(BaseAug):
             res_mat = tf.linalg.matmul(bbox_trans_mat, coord_mat)
 
             aug_x_min = tf.math.reduce_min(res_mat[0])
-            aug_x_min = tf.clip_by_value(aug_x_min, 0.0, image_width)
+            aug_x_min = tf.clip_by_value(aug_x_min, 0.0, 1.0)
             aug_y_min = tf.math.reduce_min(res_mat[1])
-            aug_y_min = tf.clip_by_value(aug_y_min, 0.0, image_height)
+            aug_y_min = tf.clip_by_value(aug_y_min, 0.0, 1.0)
             aug_x_max = tf.math.reduce_max(res_mat[0])
-            aug_x_max = tf.clip_by_value(aug_x_max, 0.0, image_width)
+            aug_x_max = tf.clip_by_value(aug_x_max, 0.0, 1.0)
             aug_y_max = tf.math.reduce_max(res_mat[1])
-            aug_y_max = tf.clip_by_value(aug_y_max, 0.0, image_height)
+            aug_y_max = tf.clip_by_value(aug_y_max, 0.0, 1.0)
             aug_bbox = tf.convert_to_tensor(
                 [aug_x_min, aug_y_min, aug_x_max, aug_y_max],
                 dtype=tf.float32)

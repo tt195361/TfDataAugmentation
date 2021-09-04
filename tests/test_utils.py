@@ -6,6 +6,7 @@ import tensorflow as tf
 import numpy as np
 import albumentations as A
 from enum import Enum
+from .context import TfDataAugmentation as Tfda
 
 IMAGE_HEIGHT = 20
 IMAGE_WIDTH = 16
@@ -74,15 +75,22 @@ def make_labels(bboxes):
     return labels
 
 
+def make_tgt_transform(transform):
+    bbox_params = Tfda.BboxParams('pascal_voc')
+    tgt_transform = Tfda.Compose(
+        [transform], bbox_params=bbox_params, p=1.0)
+    return tgt_transform
+
+
 def make_ref_transform(transform):
-    bbox_params = get_bbox_params()
+    bbox_params = make_alb_bbox_params()
     ref_transform = A.Compose(
         [transform],
         p=1.0, bbox_params=bbox_params)
     return ref_transform
 
 
-def get_bbox_params():
+def make_alb_bbox_params():
     bbox_params = A.BboxParams(
         format='pascal_voc',
         min_area=0,

@@ -15,9 +15,9 @@ from .test_utils import TestResult
         (1.1, TestResult.Error, "> max => Error"),
     ])
 def test_init_param_p(p, expected, message):
-    actual = TestResult.OK
     try:
         Tfda.BaseAug(p=p)
+        actual = TestResult.OK
     except ValueError:
         actual = TestResult.Error
     assert expected == actual, message
