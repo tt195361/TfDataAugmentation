@@ -8,7 +8,7 @@ from . import gen_utils
 from . import image_utils
 
 
-def make_image_map(height, width, trans_mat):
+def make_image_inv_map(height, width, trans_mat):
     h_rng = tf.range(height, dtype=tf.float32)
     w_rng = tf.range(width, dtype=tf.float32)
     x, y = tf.meshgrid(w_rng, h_rng)
@@ -16,6 +16,8 @@ def make_image_map(height, width, trans_mat):
     y = tf.reshape(y, [-1])
     ones = tf.ones_like(x)
     coord_mat = tf.stack([x, y, ones])
+
+    trans_mat = tf.linalg.inv(trans_mat)
 
     res_mat = tf.linalg.matmul(trans_mat, coord_mat)
     map_x = res_mat[0]
@@ -47,17 +49,17 @@ class ShiftScaleRotate(BaseAug):
             "border_mode")
 
     def _make_params(self, image):
-        image_height, image_width = \
-            image_utils.get_image_size(image, dtype=tf.float32)
         rnd_shift = gen_utils.random_float(
             [2], -self.shift_limit, self.shift_limit)
+        rnd_z = gen_utils.random_float(
+            [], 1.0 - self.scale_limit, 1.0 + self.scale_limit)
+        rnd_theta = gen_utils.random_float(
+            [], -self.rotate_limit, self.rotate_limit)
         params = {
-            "tx": image_width * rnd_shift[0],
-            "ty": image_height * rnd_shift[1],
-            "z": gen_utils.random_float(
-                [], 1.0 - self.scale_limit, 1.0 + self.scale_limit),
-            "theta": gen_utils.random_float(
-                [], -self.rotate_limit, self.rotate_limit)
+            "tx": rnd_shift[0],
+            "ty": rnd_shift[1],
+            "z": rnd_z,
+            "theta": rnd_theta,
         }
         return params
 
@@ -66,9 +68,9 @@ class ShiftScaleRotate(BaseAug):
             image_utils.get_image_size(image, dtype=tf.float32)
         image_trans_mat = image_utils.make_trans_mat(
             image_height, image_width,
-            -params["tx"], -params["ty"],
-            1.0/params["z"], -params["theta"])
-        self.image_map_x, self.image_map_y = make_image_map(
+            params["tx"], params["ty"],
+            params["z"], params["theta"])
+        self.image_map_x, self.image_map_y = make_image_inv_map(
             image_height, image_width, image_trans_mat)
 
     def _do_aug_image(self, image):

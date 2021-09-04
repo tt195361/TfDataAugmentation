@@ -98,8 +98,10 @@ def classical_round(x):
 
 
 def interpolate_nearest(image, map_x, map_y):
+    rounded_map_x = classical_round(map_x)
+    rounded_map_y = classical_round(map_y)
     interpolate_image = gather_nd(
-        image, classical_round(map_x), classical_round(map_y))
+        image, rounded_map_x, rounded_map_y)
     return interpolate_image
 
 
@@ -149,10 +151,10 @@ def remap(
         map_stack = tf.stack([map_y, map_x])  # [ 2, height, width ]
         map_indices = tf.transpose(           # [ height, width ,2 ]
             map_stack, perm=[1, 2, 0])
-        y_ge_0 = (0.0 <= map_indices[:, :, 0])
-        y_lt_h = (map_indices[:, :, 0] < height_f)
-        x_ge_0 = (0.0 <= map_indices[:, :, 1])
-        x_lt_w = (map_indices[:, :, 1] < width_f)
+        y_ge_0 = (-0.5 <= map_indices[:, :, 0])
+        y_lt_h = (map_indices[:, :, 0] < height_f - 0.5)
+        x_ge_0 = (-0.5 <= map_indices[:, :, 1])
+        x_lt_w = (map_indices[:, :, 1] < width_f - 0.5)
         inside_boundary = tf.math.reduce_all(
             tf.stack([y_ge_0, y_lt_h, x_ge_0, x_lt_w]), axis=0)  # [h, w]
         inside_boundary = inside_boundary[:, :, tf.newaxis]  # [h, w, 1]

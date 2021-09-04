@@ -67,8 +67,8 @@ def test_call(shift_limit, scale_limit, rotate_limit, condition):
         expected_alb_bboxes, height, width)
 
     test_utils.partial_assert_array(
-        expected_image, actual_image, 0.85, condition + ": image")
+        expected_image, actual_image, 0.9, condition + ": image")
     test_utils.partial_assert_array(
-        expected_mask, actual_mask, 0.85, condition + ": mask")
+        expected_mask, actual_mask, 0.9, condition + ": mask")
     test_utils.assert_array(
         expected_bboxes, actual_bboxes, "bboxes")

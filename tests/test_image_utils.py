@@ -49,8 +49,8 @@ def test_remap(tx, ty, z, theta, condition):
     image = tf.reshape(image, [HEIGHT, WIDTH, 1])
 
     trans_mat = Tfda.make_trans_mat(
-        HEIGHT, WIDTH, -tx, -ty, 1.0/z, -theta)
-    map_x, map_y = Tfda.make_image_map(HEIGHT, WIDTH, trans_mat)
+        HEIGHT, WIDTH, tx, ty, z, theta)
+    map_x, map_y = Tfda.make_image_inv_map(HEIGHT, WIDTH, trans_mat)
     actual = Tfda.remap(
         image, map_x, map_y, interpolation='nearest',
         border_mode='constant')
@@ -62,4 +62,4 @@ def test_remap(tx, ty, z, theta, condition):
         border_mode=cv2.BORDER_CONSTANT)
 
     test_utils.partial_assert_array(
-        expected, actual, 0.75, condition)
+        expected, actual, 0.8, condition)
