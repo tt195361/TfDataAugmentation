@@ -15,7 +15,7 @@ class Compose(BaseAug):
         self.transforms = gen_utils.check_transforms(transforms)
         self.bbox_processor = BboxParams.make_processor(bbox_params)
 
-    def __call__(self, **data):
+    def do_aug(self, **data):
         if "bboxes" in data.keys():
             data["bboxes"] = self._to_internal_bboxes(data)
 

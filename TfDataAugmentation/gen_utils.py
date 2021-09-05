@@ -47,8 +47,7 @@ def check_transforms(transforms):
             message = \
                 "The element in 'transforms' needs to be " \
                 "an instance of 'BaseAug'. " \
-                "The element '{0} ({1})' is not an instance " \
-                "of 'BaseAug'." \
+                "Passed element '{0} ({1})'." \
                 .format(trans, type(trans))
             raise TypeError(message)
 

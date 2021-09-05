@@ -12,45 +12,28 @@ class BaseAug:
         self.p = gen_utils.check_range(p, 0.0, 1.0, "p")
         self.params = {}
 
-    def __call__(self, **data):
-        supported_keys = {"image", "mask", "bboxes"}
-        for key in data.keys():
-            if key not in supported_keys:
-                message = \
-                    "The specified key '{0}' in **data is not supported." \
-                    "Supported keys are '{1}'." \
-                    .format(key, ', '.join(supported_keys))
-                raise ValueError(message)
+    # Must not override
+    # @final # available Python 3.8
+    def __call__(self, force_apply=False, **data):
+        rnd = gen_utils.random_float()
+        aug_result = tf.cond(
+            tf.math.logical_or(rnd <= self.p, force_apply),
+            lambda: self.do_aug(**data),
+            lambda: self._no_aug(**data))
+        return aug_result
 
+    def do_aug(self, **data):
         if "image" not in data.keys():
             raise ValueError('No "image" in **data.')
 
-        image = data["image"]
-        mask = data["mask"] if "mask" in data.keys() else None
-        bboxes = data["bboxes"] if "bboxes" in data.keys() else None
-
-        rnd = gen_utils.random_float()
-        image, mask, bboxes = tf.cond(
-            rnd <= self.p,
-            lambda: self.do_aug(image, mask, bboxes),
-            lambda: self._no_aug(image, mask, bboxes))
-
-        aug_result = {"image": image}
-        if mask is not None:
-            aug_result["mask"] = mask
-        if bboxes is not None:
-            aug_result["bboxes"] = bboxes
-        return aug_result
-
-    def do_aug(self, image, mask, bboxes):
         self.params = self._make_params()
-        self._prepare_aug(image, self.params)
-        aug_image = self._do_aug_image(image)
-        aug_mask = self._do_aug_mask(mask) \
-            if mask is not None else None
-        aug_bboxes = self._do_aug_bboxes(bboxes) \
-            if bboxes is not None else None
-        return aug_image, aug_mask, aug_bboxes
+        self._prepare_aug(data["image"], self.params)
+        data["image"] = self._do_aug_image(data["image"])
+        if "mask" in data.keys():
+            data["mask"] = self._do_aug_mask(data["mask"])
+        if "bboxes" in data.keys():
+            data["bboxes"] = self._do_aug_bboxes(data["bboxes"])
+        return data
 
     def _make_params(self):
         return {}
@@ -69,8 +52,8 @@ class BaseAug:
         return bboxes
 
     @staticmethod
-    def _no_aug(image, mask, bboxes):
-        return image, mask, bboxes
+    def _no_aug(**data):
+        return data
 
     def get_param(self, name):
         return self.params[name].numpy()
