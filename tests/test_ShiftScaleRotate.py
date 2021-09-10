@@ -5,7 +5,7 @@
 import pytest
 import numpy as np
 import albumentations as A
-import cv2
+import cv2 # noqa: for PyCharm inspection
 from .context import TfDataAugmentation as Tfda
 from . import test_utils
 
