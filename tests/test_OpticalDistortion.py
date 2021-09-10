@@ -10,8 +10,8 @@ from . import test_utils
 
 def test_call():
     tgt_od = Tfda.OpticalDistortion(
-        distort_limit=0.1,
-        shift_limit=0.1,
+        distort_limit=0.5,
+        shift_limit=0.5,
         interpolation='nearest',
         border_mode='constant',
         p=1.0)
@@ -38,7 +38,7 @@ def test_call():
         interpolation=cv2.INTER_NEAREST,
         border_mode=cv2.BORDER_CONSTANT)
 
-    test_utils.assert_array(
-        expected_image, actual_image, "image")
-    test_utils.assert_array(
-        expected_mask, actual_mask, "mask")
+    test_utils.partial_assert_array(
+        expected_image, actual_image, 0.7, "image")
+    test_utils.partial_assert_array(
+        expected_mask, actual_mask, 0.7, "mask")

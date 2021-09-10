@@ -64,8 +64,9 @@ class OpticalDistortion(BaseAug):
     def init_undistort_rectify_map(height, width, k, dx, dy):
         f_x = width
         f_y = height
-        c_x = width * 0.5 + dx
-        c_y = height * 0.5 + dy
+        # Need '+ 1.0' to match the result of albmentations
+        c_x = (width + 1.0) * 0.5 + dx
+        c_y = (height + 1.0) * 0.5 + dy
 
         f_dash_x = f_x
         c_dash_x = width * 0.5
