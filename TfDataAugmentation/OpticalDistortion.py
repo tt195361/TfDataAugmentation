@@ -75,10 +75,10 @@ class OpticalDistortion(BaseAug):
 
         h_rng = tf.range(height, dtype=tf.float32)
         w_rng = tf.range(width, dtype=tf.float32)
-        v, u = tf.meshgrid(w_rng, h_rng)
+        u, v = tf.meshgrid(w_rng, h_rng)
 
-        x = (v - c_dash_x) / f_dash_x
-        y = (u - c_dash_y) / f_dash_y
+        x = (u - c_dash_x) / f_dash_x
+        y = (v - c_dash_y) / f_dash_y
         x_dash = x
         y_dash = y
 

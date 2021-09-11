@@ -1,4 +1,5 @@
 from .BaseAug import *
+from .GridDistortion import *
 from .VerticalFlip import *
 from .HorizontalFlip import *
 from .OpticalDistortion import *

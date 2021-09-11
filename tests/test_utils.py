@@ -29,13 +29,13 @@ def random_float(shape=None, minval=0.0, maxval=1.0):
 def make_test_image(shape=None):
     shape = [IMAGE_HEIGHT, IMAGE_WIDTH, 3] if shape is None else shape
     test_image = random_float(shape, minval=0.0, maxval=1.0)
-#     h_val = tf.range(IMAGE_HEIGHT, dtype=tf.float32)
-#     w_val = tf.range(IMAGE_WIDTH, dtype=tf.float32) / 100.0
-#     h_val = h_val[:, tf.newaxis]
-#     w_val = w_val[tf.newaxis, :]
-#     test_image = h_val + w_val
-#     test_image = tf.stack(
-#         [test_image, test_image, test_image], axis=-1)
+    # h_val = tf.range(IMAGE_HEIGHT, dtype=tf.float32)
+    # w_val = tf.range(IMAGE_WIDTH, dtype=tf.float32) / 100.0
+    # h_val = h_val[:, tf.newaxis] # [IMAGE_HEIGHT, 1]
+    # w_val = w_val[tf.newaxis, :] # [1, IMAGE_WIDTH]
+    # hw_val = h_val + w_val       # [IMAGE_HEIGHT, IMAGE_WIDTH]
+    # test_image = tf.repeat(      # [IMAGE_HEIGHT, IMAGE_WIDTH, 3]
+    #     hw_val[..., tf.newaxis], 3, axis=-1)
     return test_image
 
 
