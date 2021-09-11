@@ -87,22 +87,24 @@ class GridDistortion(BaseAug):
             maps = tf.reshape(maps_stack, [-1])  # [-1] flatten into 1-D
             return maps
 
-        def _make_last_map(size, step, last_start):
+        def _make_last_map(size, step, maps_before_last):
+            last_start = maps_before_last[-1]
             last_step = size - step * num_steps  # 512 - 102*5 = 2
             size_f = tf.cast(size, dtype=tf.float32)
             last_map = tf.linspace(
                 last_start + 1.0, size_f - 1.0, last_step)
-            return last_map
+            distorted_map = tf.concat(
+                [maps_before_last, last_map], axis=0)
+            return distorted_map
 
         def _make_distorted_map(size, steps):
             step = size // num_steps
             last_step = size % num_steps
             maps_before_last = _make_maps_before_last(step, steps[:-1])
-            if last_step == 0:
-                distorted_map = maps_before_last
-            else:
-                last_map = _make_last_map(size, step, maps_before_last[-1])
-                distorted_map = tf.concat([maps_before_last, last_map], axis=0)
+            distorted_map = tf.cond(
+                last_step == 0,
+                lambda: maps_before_last,
+                lambda: _make_last_map(size, step, maps_before_last))
             return distorted_map
 
         xx = _make_distorted_map(width, stepsx)
