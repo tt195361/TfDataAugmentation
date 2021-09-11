@@ -4,7 +4,7 @@
 
 import pytest
 import tensorflow as tf
-import cv2
+import cv2  # noqa: for PyCharm inspection
 import albumentations as A
 from .context import TfDataAugmentation as Tfda
 from . import test_utils
