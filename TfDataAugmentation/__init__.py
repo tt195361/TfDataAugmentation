@@ -3,7 +3,7 @@ from .GridDistortion import *
 from .VerticalFlip import *
 from .HorizontalFlip import *
 from .OpticalDistortion import *
-from .RandomBrightness import *
+from .RandomBrightnessContrast import *
 from .ShiftScaleRotate import *
 from .Transpose import *
 from .OneOf import *
