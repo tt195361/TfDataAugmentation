@@ -1,0 +1,28 @@
+#
+# test_Blur.py
+#
+
+import albumentations as A
+from .context import TfDataAugmentation as Tfda
+from . import test_utils
+
+
+def test_call():
+    tgt_blur = Tfda.Blur(
+        blur_limit=7,
+        p=1.0)
+    tgt_transform = \
+        test_utils.make_tgt_transform(tgt_blur)
+    image = test_utils.make_test_image()
+
+    tgt_result = tgt_transform(image=image)
+    actual_image = tgt_result['image']
+
+    image_np = image.numpy()
+    ksize = tgt_blur.get_param('ksize')
+    expected_image = A.blur(image_np, ksize)
+
+    # Not exactly the same, but calculates similar values
+    # 80% points of abs diffs should be less than 0.1
+    test_utils.partial_assert_array(
+        expected_image, actual_image, 0.8, "image", eps=0.1)

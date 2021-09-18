@@ -106,22 +106,21 @@ def make_alb_bbox_params():
     return bbox_params
 
 
-def calc_abs_diff(expected_np, actual_tf):
+def calc_abs_diff(expected_np, actual_tf, eps=1e-5):
     actual_np = actual_tf.numpy()
     abs_diff = np.abs(expected_np - actual_np)
-    eps = 1e-5
     abs_diff_le_eps = (abs_diff <= eps)
     return abs_diff_le_eps
 
 
-def assert_array(expected_np, actual_tf, message):
-    abs_diff_le_eps = calc_abs_diff(expected_np, actual_tf)
+def assert_array(expected_np, actual_tf, message, eps=1e-5):
+    abs_diff_le_eps = calc_abs_diff(expected_np, actual_tf, eps)
     assert np.all(abs_diff_le_eps), message
 
 
 def partial_assert_array(
-        expected_np, actual_tf, accept_ratio, message):
-    abs_diff_le_eps = calc_abs_diff(expected_np, actual_tf)
+        expected_np, actual_tf, accept_ratio, message, eps=1e-5):
+    abs_diff_le_eps = calc_abs_diff(expected_np, actual_tf, eps)
     true_elem_count = np.sum(abs_diff_le_eps)
     total_elem_count = np.size(expected_np)
     true_elem_ratio = true_elem_count / total_elem_count
