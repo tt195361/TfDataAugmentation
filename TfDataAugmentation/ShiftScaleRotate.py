@@ -35,11 +35,11 @@ class ShiftScaleRotate(BaseAug):
             border_mode='constant',
             p=0.5):
         super(ShiftScaleRotate, self).__init__(p)
-        self.shift_limit = gen_utils.check_range(
+        self.shift_limit = gen_utils.check_float_range(
             shift_limit, 0.0, 1.0, "shift_limit")
-        self.scale_limit = gen_utils.check_range(
+        self.scale_limit = gen_utils.check_float_range(
             scale_limit, 0.0, 1.0, "scale_limit")
-        self.rotate_limit = gen_utils.check_range(
+        self.rotate_limit = gen_utils.check_float_range(
             rotate_limit, 0.0, 180.0, "rotate_limit")
         self.interpolation = gen_utils.check_enum(
             interpolation, image_utils.SUPPORTED_INTERPOLATIONS,

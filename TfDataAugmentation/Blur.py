@@ -9,16 +9,19 @@ from . import gen_utils
 
 
 class Blur(BaseAug):
+    MIN_KSIZE = 3
+
     def __init__(
             self,
             blur_limit=7,
             p=0.5):
         super(Blur, self).__init__(p)
-        self.blur_limit = blur_limit
+        self.blur_limit = gen_utils.check_int_range(
+            blur_limit, self.MIN_KSIZE, None, "blur_limit")
 
     def _make_params(self):
         ksize = gen_utils.random_int(
-            [], 3, self.blur_limit + 1)
+            [], self.MIN_KSIZE, self.blur_limit + 1)
         params = {
             "ksize": ksize,
         }
