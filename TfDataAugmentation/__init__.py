@@ -3,6 +3,7 @@ from .BaseAug import *
 from .Blur import *
 from .GridDistortion import *
 from .HorizontalFlip import *
+from .MedianBlur import *
 from .OpticalDistortion import *
 from .RandomBrightnessContrast import *
 from .ShiftScaleRotate import *
