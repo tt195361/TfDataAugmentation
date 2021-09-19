@@ -7,23 +7,36 @@ from . import BaseAug as Ba
 
 
 def check_float_range(val, min_val, max_val, name):
-    _check_type(val, float, name)
+    _check_type_list(val, [int, float], name)
     _check_range(val, min_val, max_val, name)
     return val
 
 
 def check_int_range(val, min_val, max_val, name):
-    _check_type(val, int, name)
+    _check_one_type(val, int, name)
     _check_range(val, min_val, max_val, name)
     return val
 
 
-def _check_type(val, expected_type, name):
+def _check_type_list(val, expected_type_list, name):
+    for expected_type in expected_type_list:
+        if isinstance(val, expected_type):
+            return
+    expected_type_str = ', '.join(
+        [str(t) for t in expected_type_list])
+    message = \
+        "The type of '{0}' must be an instance of '{1}'. " \
+        "Got {2} ({3})" \
+        .format(name, expected_type_str, val, type(val))
+    raise TypeError(message)
+
+
+def _check_one_type(val, expected_type, name):
     if not isinstance(val, expected_type):
         message = \
-            "The type of '{0}' must be float. " \
-            "Got {1} ({2})" \
-            .format(name, val, type(val))
+            "The type of '{0}' must be an instance of {1}. " \
+            "Got {2} ({3})" \
+            .format(name, expected_type, val, type(val))
         raise TypeError(message)
 
 

@@ -71,7 +71,7 @@ def median_filter2d(
     if area % 2 == 1:
         median = top[:, :, :, floor - 1]
     else:
-        median = (top[:, :, :, floor - 1] + top[:, :, :, :, ceil - 1]) / 2
+        median = (top[:, :, :, floor - 1] + top[:, :, :, ceil - 1]) / 2
 
     return median
 

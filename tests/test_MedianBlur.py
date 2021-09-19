@@ -40,7 +40,7 @@ def test_blur_limit_value(blur_limit, expected, message):
 
 def test_call():
     tgt_median_blur = Tfda.MedianBlur(
-        blur_limit=7,
+        blur_limit=5,
         p=1.0)
     tgt_transform = \
         test_utils.make_tgt_transform(tgt_median_blur)
@@ -51,9 +51,12 @@ def test_call():
 
     image_np = image.numpy()
     ksize = tgt_median_blur.get_param('ksize')
-    expected_image = A.median_blur(image_np, ksize)
 
-    # Not exactly the same, but calculates much the same values
-    # 80% points of abs diffs should be less than 0.1
-    test_utils.partial_assert_array(
-        expected_image, actual_image, 0.8, "image", eps=0.1)
+    # ksize must be 3 or 5 for A.median_blur
+    if ksize == 3 or ksize == 5:
+        expected_image = A.median_blur(image_np, ksize)
+
+        # Not exactly the same, but calculates much the same values
+        # 80% points of abs diffs should be less than 0.1
+        test_utils.partial_assert_array(
+            expected_image, actual_image, 0.8, "image", eps=0.1)

@@ -8,6 +8,40 @@ import albumentations as A
 import cv2 # noqa: for PyCharm inspection
 from .context import TfDataAugmentation as Tfda
 from . import test_utils
+from .test_utils import TestResult
+
+
+@pytest.mark.parametrize(
+    "shift_limit, expected, message", [
+        (-0.1, TestResult.Error, "< min => Error"),
+        (0.0, TestResult.OK, "== min => OK"),
+        (1.0, TestResult.OK, "== max => OK"),
+        (1.1, TestResult.Error, "> max => Error"),
+    ])
+def test_shift_limit_val(shift_limit, expected, message):
+    try:
+        Tfda.ShiftScaleRotate(
+            shift_limit=shift_limit)
+        actual = TestResult.OK
+    except ValueError:
+        actual = TestResult.Error
+    assert expected == actual, message
+
+
+@pytest.mark.parametrize(
+    "shift_limit, expected, message", [
+        (0.0, TestResult.OK, "float => OK"),
+        (1, TestResult.OK, "int => OK"),
+        ("0", TestResult.Error, "str => Error"),
+    ])
+def test_shift_limit_type(shift_limit, expected, message):
+    try:
+        Tfda.ShiftScaleRotate(
+            shift_limit=shift_limit)
+        actual = TestResult.OK
+    except TypeError:
+        actual = TestResult.Error
+    assert expected == actual, message
 
 
 @pytest.mark.parametrize(
