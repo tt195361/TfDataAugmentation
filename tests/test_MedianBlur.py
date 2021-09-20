@@ -27,8 +27,7 @@ def test_blur_limit_type(blur_limit, expected, message):
     "blur_limit, expected, message", [
         (2, TestResult.Error, "< min => Error"),
         (3, TestResult.OK, "== min => OK"),
-        (10, TestResult.OK, "== max => OK"),
-        (11, TestResult.Error, "> max => Error"),
+        (100, TestResult.OK, "no max limit => OK"),
     ])
 def test_blur_limit_value(blur_limit, expected, message):
     try:
