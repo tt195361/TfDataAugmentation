@@ -59,7 +59,7 @@ class MedianBlur(BaseAug):
         #     }
         # )
 
-        aug_image = median_filter2d(image, filter_shape=(5, 5))
+        aug_image = tfa.image.median_filter2d(image, filter_shape=(5, 5))
         aug_image = tf.reshape(aug_image, image_shape)
         return aug_image
 
