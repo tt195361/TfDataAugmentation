@@ -40,26 +40,25 @@ class MedianBlur(BaseAug):
         #     return _do_filter
         #
         image_shape = tf.shape(image)
-        # ksize = self.params['ksize']
-        # aug_image = tf.switch_case(
-        #     ksize,
-        #     branch_fns={
-        #         # branch index must start from 0
-        #         0: median_filter(0),
-        #         1: median_filter(1),
-        #         2: median_filter(2),
-        #         3: median_filter(3),
-        #         4: median_filter(4),
-        #         5: median_filter(5),
-        #         6: median_filter(6),
-        #         7: median_filter(7),
-        #         8: median_filter(8),
-        #         9: median_filter(9),
-        #         10: median_filter(10)
-        #     }
-        # )
+        ksize = self.params['ksize']
+        aug_image = tf.switch_case(
+            ksize,
+            branch_fns={
+                # branch index must start from 0
+                0: lambda: tfa.image.median_filter2d(image, filter_shape=[0, 0]),
+                1: lambda: tfa.image.median_filter2d(image, filter_shape=[1, 1]),
+                2: lambda: tfa.image.median_filter2d(image, filter_shape=[2, 2]),
+                3: lambda: tfa.image.median_filter2d(image, filter_shape=[3, 3]),
+                4: lambda: tfa.image.median_filter2d(image, filter_shape=[4, 4]),
+                5: lambda: tfa.image.median_filter2d(image, filter_shape=[5, 5]),
+                6: lambda: tfa.image.median_filter2d(image, filter_shape=[6, 6]),
+                7: lambda: tfa.image.median_filter2d(image, filter_shape=[7, 7]),
+                8: lambda: tfa.image.median_filter2d(image, filter_shape=[8, 8]),
+                9: lambda: tfa.image.median_filter2d(image, filter_shape=[9, 9]),
+                10: lambda: tfa.image.median_filter2d(image, filter_shape=[10, 10])
+            }
+        )
 
-        aug_image = tfa.image.median_filter2d(image, filter_shape=(5, 5))
         aug_image = tf.reshape(aug_image, image_shape)
         return aug_image
 
