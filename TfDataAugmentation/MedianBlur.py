@@ -29,34 +29,99 @@ class MedianBlur(BaseAug):
         return params
 
     def _do_aug_image(self, image):
-        image_shape = tf.shape(image)
-        ksize = self.params['ksize']
-
         # filter_shape for tf.image.median_filter2d must be integer,
         # not tensor, so needs some program...
-        def median_filter2d(filter_shape):
+        def median_filter(ksz):
+            filter_shape = (ksz, ksz)
             def _do_filter():
-                filter_image = tfa.image.median_filter2d(
+                filter_image = median_filter2d(
                     image, filter_shape=filter_shape)
                 return filter_image
             return _do_filter
 
+        image_shape = tf.shape(image)
+        ksize = self.params['ksize']
         aug_image = tf.switch_case(
             ksize,
             branch_fns={
                 # branch index must start from 0
-                0: median_filter2d(0),
-                1: median_filter2d(1),
-                2: median_filter2d(2),
-                3: median_filter2d(3),
-                4: median_filter2d(4),
-                5: median_filter2d(5),
-                6: median_filter2d(6),
-                7: median_filter2d(7),
-                8: median_filter2d(8),
-                9: median_filter2d(9),
-                10: median_filter2d(10)
+                0: median_filter(0),
+                1: median_filter(1),
+                2: median_filter(2),
+                3: median_filter(3),
+                4: median_filter(4),
+                5: median_filter(5),
+                6: median_filter(6),
+                7: median_filter(7),
+                8: median_filter(8),
+                9: median_filter(9),
+                10: median_filter(10)
             }
         )
         aug_image = tf.reshape(aug_image, image_shape)
         return aug_image
+
+
+# Original one causes the error "ValueError: Paddings must be non-negative..."
+# https://github.com/tensorflow/addons/blob/v0.14.0/tensorflow_addons/image/filters.py#L125-L200
+def median_filter2d(
+    image,
+    filter_shape,
+    padding="REFLECT",
+    constant_values=0,
+):
+    image_shape = tf.shape(image)
+    height = image_shape[0]
+    width = image_shape[1]
+    channels = image_shape[2]
+
+    # Explicitly pad the image
+    image = _pad(image, filter_shape, mode=padding, constant_values=constant_values)
+
+    area = filter_shape[0] * filter_shape[1]
+
+    floor = (area + 1) // 2
+    ceil = area // 2 + 1
+
+    # tf.image.extract_patches needs at least 4D, so add 1D
+    image = image[tf.newaxis, ...]
+    patches = tf.image.extract_patches(
+        image,
+        sizes=[1, filter_shape[0], filter_shape[1], 1],
+        strides=[1, 1, 1, 1],
+        rates=[1, 1, 1, 1],
+        padding="VALID",
+    )
+
+    patches = tf.reshape(patches, shape=[height, width, channels, area])
+
+    # Note the returned median is casted back to the original type
+    # Take [5, 6, 7, 8] for example, the median is (6 + 7) / 2 = 3.5
+    # It turns out to be int(6.5) = 6 if the original type is int
+    top = tf.nn.top_k(patches, k=ceil).values
+    if area % 2 == 1:
+        median = top[:, :, :, floor - 1]
+    else:
+        median = (top[:, :, :, floor - 1] + top[:, :, :, ceil - 1]) / 2
+
+    return median
+
+
+def _pad(
+    image,
+    filter_shape,
+    mode="CONSTANT",
+    constant_values=0,
+):
+    if mode.upper() not in {"REFLECT", "CONSTANT", "SYMMETRIC"}:
+        raise ValueError(
+            'padding should be one of "REFLECT", "CONSTANT", or "SYMMETRIC".'
+        )
+    constant_values = tf.convert_to_tensor(constant_values, image.dtype)
+    filter_height, filter_width = filter_shape
+    pad_top = (filter_height - 1) // 2
+    pad_bottom = filter_height - 1 - pad_top
+    pad_left = (filter_width - 1) // 2
+    pad_right = filter_width - 1 - pad_left
+    paddings = [[pad_top, pad_bottom], [pad_left, pad_right], [0, 0]]
+    return tf.pad(image, paddings, mode=mode, constant_values=constant_values)
