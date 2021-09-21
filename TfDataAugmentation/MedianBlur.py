@@ -51,7 +51,7 @@ def median_filter2d(image, filter_shape):
     height_rng = tf.range(height, dtype=tf.int32)
     width_rng = tf.range(width, dtype=tf.int32)
     channels_rng = tf.range(channels, dtype=tf.int32)
-    height_idx, width_idx, channels_idx  = tf.meshgrid(
+    height_idx, width_idx, channels_idx = tf.meshgrid(
         height_rng, width_rng, channels_rng, indexing="ij")
     height_idx = tf.reshape(height_idx, [-1])
     width_idx = tf.reshape(width_idx, [-1])
@@ -76,8 +76,7 @@ def median_filter2d(image, filter_shape):
             lambda: top[floor - 1],
             lambda: (top[floor - 1] + top[ceil - 1]) / 2)
         return m
-    median = tf.map_fn(
-        get_median, map_idx, dtype=tf.float32)
+    median = tf.vectorized_map(get_median, map_idx)
     return median
 
 
