@@ -59,24 +59,29 @@ def median_filter2d(image, filter_shape):
     map_idx = tf.stack(
         [height_idx, width_idx, channels_idx])
     map_idx = tf.transpose(map_idx)
+    map_idx = tf.reshape(map_idx, [height, width * channels, 3])
 
     area = filter_shape[0] * filter_shape[1]
     floor = (area + 1) // 2
     ceil = area // 2 + 1
 
-    def get_median(mi):
-        h = mi[0]
-        w = mi[1]
-        c = mi[2]
-        patch = image[h:h + fh, w:w + fw, c]
-        patch = tf.reshape(patch, [-1])  # flatten
-        top = tf.nn.top_k(patch, k=ceil).values
-        m = tf.cond(
-            area % 2 == 1,
-            lambda: top[floor - 1],
-            lambda: (top[floor - 1] + top[ceil - 1]) / 2)
-        return m
-    median = tf.vectorized_map(get_median, map_idx)
+    def process_height(h_i):
+        def get_median(m_i):
+            h = m_i[0]
+            w = m_i[1]
+            c = m_i[2]
+            patch = image[h:h + fh, w:w + fw, c]
+            patch = tf.reshape(patch, [-1])  # flatten
+            top = tf.nn.top_k(patch, k=ceil).values
+            m = tf.cond(
+                area % 2 == 1,
+                lambda: top[floor - 1],
+                lambda: (top[floor - 1] + top[ceil - 1]) / 2)
+            return m
+        mh = tf.map_fn(
+            get_median, h_i, fn_output_signature=tf.float32)
+        return mh
+    median = tf.vectorized_map(process_height, map_idx)
     return median
 
 
