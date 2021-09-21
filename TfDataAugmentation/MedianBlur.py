@@ -37,6 +37,7 @@ class MedianBlur(BaseAug):
 
 
 # original is "tensorflow_addons/image/filters.py"
+@tf.function
 def median_filter2d(image, filter_shape):
     image_shape = tf.shape(image)
     height = image_shape[0]
@@ -64,7 +65,9 @@ def median_filter2d(image, filter_shape):
     ceil = area // 2 + 1
 
     def get_median(mi):
-        h, w, c = mi
+        h = mi[0]
+        w = mi[1]
+        c = mi[2]
         patch = image[h:h + fh, w:w + fw, c]
         patch = tf.reshape(patch, [-1])  # flatten
         top = tf.nn.top_k(patch, k=ceil).values
