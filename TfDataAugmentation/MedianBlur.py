@@ -37,7 +37,6 @@ class MedianBlur(BaseAug):
 
 
 # original is "tensorflow_addons/image/filters.py"
-@tf.function
 def median_filter2d(image, filter_shape):
     image_shape = tf.shape(image)
     height = image_shape[0]
