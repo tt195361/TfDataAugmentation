@@ -3,14 +3,12 @@
 #
 
 import tensorflow as tf
-import tensorflow_addons as tfa
 from . import BaseAug
 from . import gen_utils
 
 
 class MedianBlur(BaseAug):
     MIN_KSIZE = 3
-    MAX_KSIZE = 20
 
     def __init__(
             self,
@@ -18,7 +16,7 @@ class MedianBlur(BaseAug):
             p=0.5):
         super(MedianBlur, self).__init__(p)
         self.blur_limit = gen_utils.check_int_range(
-            blur_limit, self.MIN_KSIZE, self.MAX_KSIZE, "blur_limit")
+            blur_limit, self.MIN_KSIZE, None, "blur_limit")
 
     def _make_params(self):
         ksize = gen_utils.random_int(
@@ -31,43 +29,71 @@ class MedianBlur(BaseAug):
     def _do_aug_image(self, image):
         image_shape = tf.shape(image)
         ksize = self.params['ksize']
+        filter_shape = (ksize, ksize)
 
-        if ksize == 3:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[3, 3])
-        elif ksize == 4:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[4, 4])
-        elif ksize == 5:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[5, 5])
-        elif ksize == 6:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[6, 6])
-        elif ksize == 7:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[7, 7])
-        elif ksize == 8:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[8, 8])
-        elif ksize == 9:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[9, 9])
-        elif ksize == 10:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[10, 10])
-        elif ksize == 11:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[11, 11])
-        elif ksize == 12:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[12, 12])
-        elif ksize == 13:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[13, 13])
-        elif ksize == 14:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[14, 14])
-        elif ksize == 15:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[15, 15])
-        elif ksize == 16:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[16, 16])
-        elif ksize == 17:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[17, 17])
-        elif ksize == 18:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[18, 18])
-        elif ksize == 19:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[19, 19])
-        else:
-            aug_image = tfa.image.median_filter2d(image, filter_shape=[20, 20])
-
+        aug_image = median_filter2d(image, filter_shape)
         aug_image = tf.reshape(aug_image, image_shape)
         return aug_image
+
+
+# original is "tensorflow_addons/image/filters.py"
+@tf.function
+def median_filter2d(image, filter_shape):
+    image_shape = tf.shape(image)
+    height = image_shape[0]
+    width = image_shape[1]
+    channels = image_shape[2]
+
+    # Explicitly pad the image
+    image = _pad(image, filter_shape, mode="REFLECT", constant_values=0)
+
+    height_rng = tf.range(height, dtype=tf.int32)
+    width_rng = tf.range(width, dtype=tf.int32)
+    channels_rng = tf.range(channels, dtype=tf.int32)
+    fh, fw = filter_shape
+
+    area = filter_shape[0] * filter_shape[1]
+    floor = (area + 1) // 2
+    ceil = area // 2 + 1
+
+    def loop_height(h):
+        def loop_width(w):
+            def get_median(c):
+                patch = image[h:h + fh, w:w + fw, c]
+                patch = tf.reshape(patch, [-1])  # flatten
+                top = tf.nn.top_k(patch, k=ceil).values
+                mc = tf.cond(
+                    area % 2 == 1,
+                    lambda: top[floor - 1],
+                    lambda: (top[floor - 1] + top[ceil - 1]) / 2)
+                return mc
+            mw = tf.map_fn(
+                get_median, channels_rng, dtype=tf.float32)
+            return mw
+        mh = tf.map_fn(
+            loop_width, width_rng, dtype=tf.float32)
+        return mh
+    median = tf.map_fn(
+        loop_height, height_rng, dtype=tf.float32)
+    return median
+
+
+@tf.function
+def _pad(
+    image,
+    filter_shape,
+    mode="CONSTANT",
+    constant_values=0,
+):
+    if mode.upper() not in {"REFLECT", "CONSTANT", "SYMMETRIC"}:
+        raise ValueError(
+            'padding should be one of "REFLECT", "CONSTANT", or "SYMMETRIC".'
+        )
+    constant_values = tf.convert_to_tensor(constant_values, image.dtype)
+    filter_height, filter_width = filter_shape
+    pad_top = (filter_height - 1) // 2
+    pad_bottom = filter_height - 1 - pad_top
+    pad_left = (filter_width - 1) // 2
+    pad_right = filter_width - 1 - pad_left
+    paddings = [[pad_top, pad_bottom], [pad_left, pad_right], [0, 0]]
+    return tf.pad(image, paddings, mode=mode, constant_values=constant_values)
