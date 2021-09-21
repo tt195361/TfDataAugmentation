@@ -88,8 +88,8 @@ def test_call(
 
     image_np = image.numpy()
     hue_shift = float(tgt_hsv.get_param('hue_shift'))
-    sat_shift = float(tgt_hsv.get_param('sat_shift'))
-    val_shift = float(tgt_hsv.get_param('val_shift'))
+    sat_shift = float(tgt_hsv.get_param('sat_shift')) / 255.0
+    val_shift = float(tgt_hsv.get_param('val_shift')) / 255.0
     expected_image = A.shift_hsv(
         image_np, hue_shift, sat_shift, val_shift)
 

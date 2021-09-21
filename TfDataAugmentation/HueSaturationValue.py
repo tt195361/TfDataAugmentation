@@ -38,8 +38,8 @@ class HueSaturationValue(BaseAug):
 
     def _do_aug_image(self, image):
         hue_shift = self.params['hue_shift'] / 360.0
-        sat_shift = self.params['sat_shift']
-        val_shift = self.params['val_shift']
+        sat_shift = self.params['sat_shift'] / 255.0
+        val_shift = self.params['val_shift'] / 255.0
 
         hsv_image = tf.image.rgb_to_hsv(image)
         hue_values = (hsv_image[..., 0] + hue_shift) % 1.0
