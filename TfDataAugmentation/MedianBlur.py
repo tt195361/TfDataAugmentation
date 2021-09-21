@@ -37,7 +37,6 @@ class MedianBlur(BaseAug):
 
 
 # original is "tensorflow_addons/image/filters.py"
-@tf.function
 def median_filter2d(image, filter_shape):
     image_shape = tf.shape(image)
     height = image_shape[0]
@@ -47,34 +46,35 @@ def median_filter2d(image, filter_shape):
     # Explicitly pad the image
     image = _pad(image, filter_shape, mode="REFLECT", constant_values=0)
 
+    fh, fw = filter_shape
     height_rng = tf.range(height, dtype=tf.int32)
     width_rng = tf.range(width, dtype=tf.int32)
     channels_rng = tf.range(channels, dtype=tf.int32)
-    fh, fw = filter_shape
+    height_idx, width_idx, channels_idx  = tf.meshgrid(
+        height_rng, width_rng, channels_rng, indexing="ij")
+    height_idx = tf.reshape(height_idx, [-1])
+    width_idx = tf.reshape(width_idx, [-1])
+    channels_idx = tf.reshape(channels_idx, [-1])
+    map_idx = tf.stack(
+        [height_idx, width_idx, channels_idx])
+    map_idx = tf.transpose(map_idx)
 
     area = filter_shape[0] * filter_shape[1]
     floor = (area + 1) // 2
     ceil = area // 2 + 1
 
-    def loop_height(h):
-        def loop_width(w):
-            def get_median(c):
-                patch = image[h:h + fh, w:w + fw, c]
-                patch = tf.reshape(patch, [-1])  # flatten
-                top = tf.nn.top_k(patch, k=ceil).values
-                mc = tf.cond(
-                    area % 2 == 1,
-                    lambda: top[floor - 1],
-                    lambda: (top[floor - 1] + top[ceil - 1]) / 2)
-                return mc
-            mw = tf.map_fn(
-                get_median, channels_rng, dtype=tf.float32)
-            return mw
-        mh = tf.map_fn(
-            loop_width, width_rng, dtype=tf.float32)
-        return mh
+    def get_median(mi):
+        h, w, c = mi
+        patch = image[h:h + fh, w:w + fw, c]
+        patch = tf.reshape(patch, [-1])  # flatten
+        top = tf.nn.top_k(patch, k=ceil).values
+        m = tf.cond(
+            area % 2 == 1,
+            lambda: top[floor - 1],
+            lambda: (top[floor - 1] + top[ceil - 1]) / 2)
+        return m
     median = tf.map_fn(
-        loop_height, height_rng, dtype=tf.float32)
+        get_median, map_idx, dtype=tf.float32)
     return median
 
 
