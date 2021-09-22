@@ -46,42 +46,44 @@ def median_filter2d(image, filter_shape):
     # Explicitly pad the image
     image = _pad(image, filter_shape, mode="REFLECT", constant_values=0)
 
-    fh, fw = filter_shape
     height_rng = tf.range(height, dtype=tf.int32)
     width_rng = tf.range(width, dtype=tf.int32)
     channels_rng = tf.range(channels, dtype=tf.int32)
     height_idx, width_idx, channels_idx = tf.meshgrid(
         height_rng, width_rng, channels_rng, indexing="ij")
-    height_idx = tf.reshape(height_idx, [-1])
-    width_idx = tf.reshape(width_idx, [-1])
-    channels_idx = tf.reshape(channels_idx, [-1])
-    map_idx = tf.stack(
+    height_idx = tf.reshape(height_idx, [-1])      # [h*w*c]
+    width_idx = tf.reshape(width_idx, [-1])        # [h*w*c]
+    channels_idx = tf.reshape(channels_idx, [-1])  # [h*w*c]
+    map_idx = tf.stack(                            # [3, h*w*c]
         [height_idx, width_idx, channels_idx])
-    map_idx = tf.transpose(map_idx)
-    map_idx = tf.reshape(map_idx, [height, width * channels, 3])
+    map_idx = tf.transpose(map_idx)                # [h*w*c, 3]
+    map_idx = map_idx[:, tf.newaxis, :]            # [h*w*c, 1, 3]
 
     area = filter_shape[0] * filter_shape[1]
+    fh, fw = filter_shape
+    fh_rng = tf.range(fh, dtype=tf.int32)
+    fw_rng = tf.range(fw, dtype=tf.int32)
+    fh_idx, fw_idx = tf.meshgrid(fh_rng, fw_rng, indexing="ij")
+    fh_idx = tf.reshape(fh_idx, [-1])              # [fh*fw]
+    fw_idx = tf.reshape(fw_idx, [-1])              # [fh*fw]
+    fc_idx = tf.zeros_like(fh_idx, dtype=tf.int32)
+    flt_idx = tf.stack([fh_idx, fw_idx, fc_idx])   # [3, fh*fw]
+    flt_idx = tf.transpose(flt_idx)                # [fh*fw, 3]
+    flt_idx = flt_idx[tf.newaxis, :, :]            # [1, fh*fw, 3]
+
+    gat_idx = map_idx + flt_idx                    # [h*w*c, fh*fw, 3]
+    gat_idx = tf.reshape(                          # [h, w, c, fh*fw, 3]
+        gat_idx, [height, width, channels, area, 3])
+    patches = tf.gather_nd(image, gat_idx)         # [h, w, c, fh*fw]
+
     floor = (area + 1) // 2
     ceil = area // 2 + 1
-
-    def process_height(h_i):
-        def get_median(m_i):
-            h = m_i[0]
-            w = m_i[1]
-            c = m_i[2]
-            patch = image[h:h + fh, w:w + fw, c]
-            patch = tf.reshape(patch, [-1])  # flatten
-            top = tf.nn.top_k(patch, k=ceil).values
-            m = tf.cond(
-                area % 2 == 1,
-                lambda: top[floor - 1],
-                lambda: (top[floor - 1] + top[ceil - 1]) / 2)
-            return m
-        mh = tf.map_fn(
-            get_median, h_i, fn_output_signature=tf.float32)
-        return mh
-    median = tf.vectorized_map(process_height, map_idx)
-    return median
+    top = tf.nn.top_k(patches, k=ceil).values      # [h, w, c, ceil]
+    median = tf.cond(
+        area % 2 == 1,
+        lambda: top[:, :, :, floor - 1],
+        lambda: (top[:, :, :, floor - 1] + top[:, :, :, ceil - 1]) / 2)
+    return median                                  # [h, w, c]
 
 
 @tf.function
