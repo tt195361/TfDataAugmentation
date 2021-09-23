@@ -36,7 +36,11 @@ class MedianBlur(BaseAug):
         return aug_image
 
 
-# original is "tensorflow_addons/image/filters.py"
+# original is "tensorflow_addons/image/filters.py".
+# original one accepts only 'int' for filter_shape,
+# it doesn't accept tensor...  I'd like to use
+# tensor for filter_shape.
+@tf.function
 def median_filter2d(image, filter_shape):
     image_shape = tf.shape(image)
     height = image_shape[0]
