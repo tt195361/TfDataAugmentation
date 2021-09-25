@@ -8,7 +8,7 @@ from . import image_utils as iu
 
 
 class VerticalFlip(BaseAug):
-    def __init__(self, p):
+    def __init__(self, p=0.5):
         super(VerticalFlip, self).__init__(p)
 
     def _do_aug_image(self, image):

@@ -1,6 +1,7 @@
 from .BaseAug import *
 
 from .Blur import *
+from .Cutout import *
 from .GridDistortion import *
 from .HorizontalFlip import *
 from .HueSaturationValue import *

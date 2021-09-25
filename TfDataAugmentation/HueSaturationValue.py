@@ -22,7 +22,7 @@ class HueSaturationValue(BaseAug):
         self.val_shift_limit = gen_utils.check_float_range(
             val_shift_limit, 0, None, "val_shift_limit")
 
-    def _make_params(self):
+    def _make_params(self, image):
         hue_shift = gen_utils.random_float(
             [], -self.hue_shift_limit, self.hue_shift_limit)
         sat_shift = gen_utils.random_float(

@@ -26,7 +26,7 @@ class BaseAug:
         if "image" not in data.keys():
             raise ValueError('No "image" in **data.')
 
-        self.params = self._make_params()
+        self.params = self._make_params(data["image"])
         self._prepare_aug(data["image"], self.params)
         data["image"] = self._do_aug_image(data["image"])
         if "mask" in data.keys():
@@ -35,7 +35,7 @@ class BaseAug:
             data["bboxes"] = self._do_aug_bboxes(data["bboxes"])
         return data
 
-    def _make_params(self):
+    def _make_params(self, image):
         return {}
 
     def _prepare_aug(self, image, params):

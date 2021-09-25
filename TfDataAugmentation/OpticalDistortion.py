@@ -22,7 +22,7 @@ class OpticalDistortion(BaseAug):
         self.interpolation = interpolation
         self.border_mode = border_mode
 
-    def _make_params(self):
+    def _make_params(self, image):
         rnd_k = gen_utils.random_float(
             [], -self.distort_limit, self.distort_limit)
         rnd_d = gen_utils.random_float(

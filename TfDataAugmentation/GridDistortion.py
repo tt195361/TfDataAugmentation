@@ -22,7 +22,7 @@ class GridDistortion(BaseAug):
         self.interpolation = interpolation
         self.border_mode = border_mode
 
-    def _make_params(self):
+    def _make_params(self, image):
         stepsx = gen_utils.random_float(
             [self.num_steps + 1],
             minval=1.0 - self.distort_limit,

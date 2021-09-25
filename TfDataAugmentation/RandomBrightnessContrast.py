@@ -17,7 +17,7 @@ class RandomBrightnessContrast(BaseAug):
         self.brightness_limit = brightness_limit
         self.contrast_limit = contrast_limit
 
-    def _make_params(self):
+    def _make_params(self, image):
         alpha = gen_utils.random_float(
             [], 1.0 - self.contrast_limit, 1.0 + self.contrast_limit)
         beta = gen_utils.random_float(

@@ -48,7 +48,7 @@ class ShiftScaleRotate(BaseAug):
             border_mode, image_utils.SUPPORTED_BORDER_MODE,
             "border_mode")
 
-    def _make_params(self):
+    def _make_params(self, image):
         rnd_shift = gen_utils.random_float(
             [2], -self.shift_limit, self.shift_limit)
         rnd_z = gen_utils.random_float(

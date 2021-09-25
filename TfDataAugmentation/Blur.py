@@ -19,7 +19,7 @@ class Blur(BaseAug):
         self.blur_limit = gen_utils.check_int_range(
             blur_limit, self.MIN_KSIZE, None, "blur_limit")
 
-    def _make_params(self):
+    def _make_params(self, image):
         ksize = gen_utils.random_int(
             [], self.MIN_KSIZE, self.blur_limit + 1)
         params = {
