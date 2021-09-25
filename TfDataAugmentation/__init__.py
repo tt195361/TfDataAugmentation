@@ -5,6 +5,7 @@ from .Cutout import *
 from .GridDistortion import *
 from .HorizontalFlip import *
 from .HueSaturationValue import *
+from .JpegCompression import *
 from .MedianBlur import *
 from .OpticalDistortion import *
 from .RandomBrightnessContrast import *
