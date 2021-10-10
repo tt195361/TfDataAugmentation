@@ -9,6 +9,7 @@ from .JpegCompression import *
 from .MedianBlur import *
 from .OpticalDistortion import *
 from .RandomBrightnessContrast import *
+from .RandomCrop import *
 from .ShiftScaleRotate import *
 from .Transpose import *
 from .VerticalFlip import *
