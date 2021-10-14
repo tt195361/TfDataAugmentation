@@ -11,8 +11,8 @@ from . import test_utils
 def test_call():
     image_height = test_utils.IMAGE_HEIGHT
     image_width = test_utils.IMAGE_WIDTH
-    crop_height = int(image_height * np.random.rand())
-    crop_width = int(image_width * np.random.rand())
+    crop_height = np.random.randint(1, image_height)
+    crop_width = np.random.randint(1, image_width)
 
     image = test_utils.make_test_image()
     mask = test_utils.make_test_image()

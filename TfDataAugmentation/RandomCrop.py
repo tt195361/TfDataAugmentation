@@ -58,6 +58,11 @@ class RandomCrop(BaseAug):
 
     def _crop_image(self, image):
         aug_image = image[self.y1:self.y2, self.x1:self.x2]
+        # set shape explicitly
+        channels = tf.shape(aug_image)[2]
+        image_shape = tf.convert_to_tensor(
+            [self.crop_height, self.crop_width, channels])
+        aug_image = tf.reshape(aug_image, image_shape)
         return aug_image
 
     def _do_aug_bboxes(self, bboxes):
